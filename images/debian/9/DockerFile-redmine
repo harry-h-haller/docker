@@ -1,0 +1,41 @@
+FROM debian9_ssh:stable
+
+ARG equipo
+ARG usuario
+ARG proxy
+
+ENV http_proxy "${proxy}"
+ENV NOTVISIBLE "in users profile"
+ENV SHELL /bin/bash
+ENV REDMINE_VERSION "2.5.0"
+ENV TERM linux
+
+# Copia de archivos de configuración
+COPY archivos/redmine/entrypoint/redmine/start1.sh /entrypoint/redmine/start1.sh
+COPY archivos/redmine/entrypoint/redmine/start2.sh /entrypoint/redmine/start2.sh
+COPY archivos/redmine/entrypoint/redmine/pre-start.sh /entrypoint/redmine/pre-start.sh
+
+# Instalación de paquetes
+RUN apt-get -y update && apt-get update && \
+    apt-get -y upgrade && \
+    apt-get -y install mysql-client libmysqlclient-dev gcc build-essential zlib1g zlib1g-dev zlibc ruby-zip libssl-dev libyaml-dev libcurl4-openssl-dev ruby gem libapache2-mod-passenger apache2-mpm-prefork apache2-dev apache2 libapr1-dev libxslt1-dev checkinstall libxml2-dev ruby-dev vim libmagickwand-dev imagemagick subversion cvs git darcs mercurial bzr
+
+# Preparación del entorno
+RUN echo '#!/bin/bash' > /etc/profile.d/redmine.sh && \
+    echo "export REDMINE_LANBG=\"es\"" >> /etc/profile.d/redmine.sh && \
+    echo "export REDMINE_VERSION=\"${REDMINE_VERSION}\"" > /etc/profile.d/redmine.sh && \
+    chmod -v 755 /etc/profile.d/redmine.sh && \    
+    chmod -v 755 /entrypoint/redmine/start1.sh && \
+    chmod -v 755 /entrypoint/redmine/start2.sh && \
+    chmod -v 755 /entrypoint/redmine/pre-start.sh && \
+    mkdir -pv /var/lib/mysql && \
+    mkdir -pv /var/log/mysql && \
+    cd /opt && \
+    wget http://www.redmine.org/releases/redmine-${REDMINE_VERSION}.tar.gz && \
+    tar xzvf redmine-${REDMINE_VERSION}.tar.gz && \
+    cd /opt/redmine-${REDMINE_VERSION}/plugins && \
+    git clone git://github.com/amartel/redmine_scm_extensions.git && \
+    git clone https://github.com/peelman/my_projects.git && \
+    git clone git://github.com/alvila/redmine_my_page_queries.git && \
+    find /opt/redmine-${REDMINE_VERSION}/plugins \( -type d -o \( -type f -a -iname "*.sh" \) \) -exec chmod -v 755 "{}" \; && \
+    find /opt/redmine-${REDMINE_VERSION}/plugins -type f \( -not -iname "*.sh" \) -exec chmod -v "644" "{}" \;

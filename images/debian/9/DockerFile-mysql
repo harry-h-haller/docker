@@ -1,0 +1,23 @@
+FROM debian9_ssh:stable
+
+ARG equipo
+ARG usuario
+ARG http_proxy
+
+ENV http_proxy ${http_proxy}
+ENV NOTVISIBLE "in users profile"
+ENV SHELL "/bin/bash"
+ENV TERM linux
+
+RUN apt-get update && apt-get update && \
+	apt-get -y upgrade && \
+	apt-get -y install mysql-server && \
+	cp /etc/mysql/my.cnf /etc/mysql/my.cnf.original
+
+COPY archivos/mysql/entrypoint/mysql/secure_installation.sh /entrypoint/mysql/secure_installation.sh
+COPY archivos/mysql/entrypoint/mysql/start1.sh /entrypoint/mysql/start1.sh
+COPY archivos/mysql/entrypoint/mysql/start2.sh /entrypoint/mysql/start2.sh
+COPY archivos/mysql/etc/mysql/my.cnf /etc/mysql/my.cnf
+
+RUN chmod -v 755 /entrypoint/mysql/secure_installation.sh /entrypoint/mysql/start1.sh /entrypoint/mysql/start2.sh && \
+    chmod -v 644 /etc/mysql/my.cnf

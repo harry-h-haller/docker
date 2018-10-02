@@ -1,0 +1,166 @@
+version: '3'
+
+services:
+        ssh:
+                depends_on:
+                    - squid
+                privileged: true
+                restart: unless-stopped
+                image: debian8_ssh:stable
+                entrypoint:
+                        - /entrypoint/entrypoint.sh
+                        - ssh
+                cap_add:
+                        - ALL
+                environment:                
+                        http_proxy: "http://squid:3128"
+                hostname: ssh
+                volumes:
+                        - /var/run/docker.sock:/var/run/docker.sock
+                ports:
+                        - "10.11.12.13:8001:22"
+
+        mysql:
+                depends_on:
+                    - squid
+                privileged: true
+                restart: unless-stopped
+                image: debian8_mysql:stable 
+                entrypoint:
+                        - /entrypoint/entrypoint.sh
+                        - mysql
+                cap_add:
+                        - ALL
+                environment:
+                        http_proxy: "http://squid:3128"
+                        MYSQL_ROOT_PASSWORD: "esclarecido"
+                        MYSQL_USERNAME: "usuario"
+                        MYSQL_PASSWORD: "esclarecido"
+                        MYSQL_DATABASE: "esquema"
+                volumes:
+                        - /var/run/docker.sock:/var/run/docker.sock
+                        - mysqldata:/var/lib/mysql
+                hostname: mysql
+                ports:
+                        - "10.11.12.13:8002:22"
+                        - "10.11.12.13:9001:3306"
+
+        squid:
+                privileged: true
+                restart: unless-stopped
+                image: debian8_squid:stable 
+                entrypoint:
+                        - /entrypoint/entrypoint.sh
+                        - squid3
+                cap_add:
+                        - ALL
+                environment:
+                        http_proxy: "http://squid:3128"
+                volumes:
+                        - /var/run/docker.sock:/var/run/docker.sock
+                        - squidlog:/var/log/squid3
+                        - squidcache:/var/spool/squid3
+                hostname: squid
+                networks:
+                        default:
+                                aliases:
+                                        - squid.yggdrasil.inf
+                ports:
+                        - "10.11.12.13:8003:22"
+                        - "10.11.12.13:9002:3128"
+        httpd:
+                privileged: true
+                restart: unless-stopped
+                depends_on:
+                        - mysql
+                        - squid
+                image: debian8_httpd:stable
+                entrypoint:
+                        - /entrypoint/entrypoint.sh
+                        - httpd
+                cap_add:
+                        - ALL
+                environment:
+                        http_proxy: "http://squid:3128"                
+                volumes:
+                        - /var/run/docker.sock:/var/run/docker.sock
+                        - httpdlog:/var/log/apache2
+                hostname: httpd
+                networks:
+                        default:
+                                aliases: 
+                                        - httpd.yggdrasil.inf
+                ports:
+                        - "10.11.12.13:8004:22"
+                        - "10.11.12.13:9003:80"
+                        - "10.11.12.13:9004:443"
+
+        redmine:
+                privileged: true
+                restart: unless-stopped
+                depends_on:
+                        - mysql
+                        - squid
+                image: debian8_redmine:stable
+                entrypoint:
+                        - /entrypoint/entrypoint.sh
+                        - redmine
+                cap_add:
+                        - ALL
+                environment:
+                        http_proxy: "http://squid:3128"
+                        MYSQL_REDMINE_DATABASE: "redmine"
+                        MYSQL_REDMINE_HOST: "mysql"
+                        MYSQL_REDMINE_PORT: "3306"
+                        MYSQL_REDMINE_USERNAME: "redmine"
+                        MYSQL_REDMINE_PASSWORD: "r3dm1n3"
+                        REDMINE_NETWORK_INTERFACE: "10.11.12.13"
+                        REDMINE_NETWORK_PORT: "80"
+                        REDMINE_LANG: "es"
+                volumes:
+                        - /var/run/docker.sock:/var/run/docker.sock
+                hostname: redmine
+                networks:
+                        default:
+                                aliases:
+                                        - redmine.yggdrasil.inf
+                ports:
+                        - "10.11.12.13:8006:22"
+                        - "10.11.12.13:9008:80"
+
+        afpserver:
+                depends_on:
+                    - squid
+                privileged: true
+                restart: unless-stopped
+                image: debian8_afpserver:stable
+                entrypoint:
+                        - /entrypoint/entrypoint.sh
+                        - afpserver
+                cap_add:
+                        - ALL
+                environment:
+                        AFP_UID: "501"
+                        AFP_GID: "20"
+                        AFP_USER: "telemaco230"
+                        AFP_PASSWORD: "esclarecido"
+                        http_proxy: "http://squid:3128"
+                volumes:
+                        - /var/run/docker.sock:/var/run/docker.sock
+                        - F:\Servicios\TimeMachine:/export/time_machine
+                hostname: afpserver
+                networks:
+                        default:
+                                aliases:
+                                        - afpserver.yggdrasil.inf
+                ports:
+                        - "10.11.12.13:22:22"
+                        - "192.168.1.41:548:548"
+
+volumes:
+        squidcache:
+        squidlog:
+        mysqldata:
+        httpdlog:
+        redminehttpddata:
+        redminehttpdlog:

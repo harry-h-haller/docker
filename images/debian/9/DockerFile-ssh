@@ -1,0 +1,33 @@
+FROM debian9_core:stable
+
+ARG equipo
+ARG usuario
+ARG http_proxy
+
+ENV http_proxy "${http_proxy}"
+ENV NOTVISIBLE "in users profile"
+ENV SHELL /bin/bash
+ENV TERM linux
+
+RUN apt-get update && apt-get update
+RUN apt-get -y upgrade
+RUN apt-get -y install iptables openssh-server
+
+COPY archivos/ssh/entrypoint/ssh/start1.sh /entrypoint/ssh/start1.sh
+COPY archivos/ssh/entrypoint/ssh/start2.sh /entrypoint/ssh/start2.sh
+COPY archivos/ssh/entrypoint/ssh/identidades/id_rsa*pub /entrypoint/ssh/identidades/
+COPY archivos/ssh/etc/ssh/ssh_config /etc/ssh/ssh_config
+
+RUN chmod -v 755 /entrypoint/ssh/*.sh && \
+    chmod -v 700 /entrypoint/ssh/identidades && \
+    chmod -v 600 /entrypoint/ssh/identidades/id_rsa*pub && \
+    sed -i "s/PermitRootLogin without-password/PermitRootLogin yes/" /etc/ssh/sshd_config && \
+    sed 's@session\s*required\s*pam_loginuid.so@session optional pam_loginuid.so@g' -i /etc/pam.d/sshd && \
+    echo "UseDNS no" >> /etc/ssh/sshd_config && \
+    mkdir -pv mkdir -pv /var/run/sshd && \
+    ssh-keygen -t rsa -f /root/.ssh/id_rsa -b 4096 -N "" && \
+    cat /root/.ssh/id_rsa.pub > /root/.ssh/authorized_keys  && \
+    find /entrypoint/ssh/identidades -type f -iname "id_rsa*pub" | xargs -d"\n" -I{} cat "{}" >> /root/.ssh/authorized_keys && \
+    echo "export VISIBLE=now" >> /etc/profile
+
+EXPOSE 22

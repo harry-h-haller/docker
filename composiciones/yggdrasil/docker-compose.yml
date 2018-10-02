@@ -1,0 +1,74 @@
+version: '3'
+
+services:
+    squid:
+        image: debian9_squid:stable
+        entrypoint:
+            - /entrypoint/entrypoint.sh
+            - squid3
+        cap_add:
+            - ALL
+        privileged: true
+        restart: unless-stopped
+        environment:
+            http_proxy: "http://squid:3128"
+        hostname: squid
+        domainname: laboratorio.inf
+        ports:
+            - "172.16.16.16:9001:22"
+            - "172.16.16.16:3128:3128"
+    httpd: 
+        image: debian9_httpd:stable
+        entrypoint:
+            - /entrypoint/entrypoint.sh
+            - httpd
+        depends_on:
+            - squid
+        cap_add:
+            - ALL
+        privileged: true
+        restart: unless-stopped
+        environment:
+            http_proxy: "http://squid:3128"
+        volumes:
+            - ./despliegue/yggdrasil/httpd/:/opt/html
+        hostname: httpd
+        domainname: laboratorio.inf
+        ports:
+            - "172.16.16.16:9004:22"
+            - "172.16.16.16:80:80"
+            - "172.16.16.16:443:443"
+        networks:
+            default:
+                aliases:
+                    - proxy.laboratorio.inf
+                    - redmine.laboratorio.inf
+                    - subversion.laboratorio.inf
+                    - porfindecorados.laboratorio.inf
+                    - webdav.laboratorio.inf
+                    - prestashop.laboratorio.inf
+                    - photo.laboratorio.inf
+                    - intranet.laboratorio.inf
+    mysql:
+        image: debian9_mysql:stable
+        entrypoint:
+            - /entrypoint/entrypoint.sh
+            - ssh
+        depends_on:
+            - squid
+        cap_add:
+            - ALL
+        privileged: true
+        restart: unless-stopped
+        environment:
+            http_proxy: "http://squid:3128"
+            MYSQL_ROOT_PASSWORD: "esclarecido"
+        volumes:
+            - ./despliegue/mysql/opt/sql.d:/opt/sql.d
+            - ./despliegue/mysql/var/lib/mysql:/var/lib/mysql
+            - ./despliegue/mysql/var/log/mysql:/var/log/mysql
+        hostname: mysql
+        domainname: laboratorio.inf
+        ports:
+            - "172.16.16.16:9006:22"
+            - "172.16.16.16:3306:3306"

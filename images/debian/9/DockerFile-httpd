@@ -1,0 +1,40 @@
+FROM debian9_ssh:stable
+
+ARG equipo
+ARG usuario
+ARG http_proxy
+
+ENV http_proxy "${http_proxy}"
+ENV NOTVISIBLE "in users profile"
+ENV SHELL /bin/bash
+ENV TERM linux
+
+RUN apt-get update && apt-get update && \
+    apt-get -y upgrade && \
+    apt-get -y install apache2 mcrypt mysql-client
+
+COPY archivos/httpd/entrypoint/httpd/start1.sh /entrypoint/httpd/start1.sh
+COPY archivos/httpd/entrypoint/httpd/start2.sh /entrypoint/httpd/start2.sh
+COPY archivos/httpd/etc/apache2/apache2.conf /etc/apache2/apache2.conf
+
+RUN chmod -v 755 /entrypoint/httpd/*.sh && \
+	chmod -v 644 /etc/apache2/apache2.conf && \
+	mkdir -pv /var/lock/apache2 /var/log/apache2 /var/run/apache2 /opt/html/ && \
+	a2enmod rewrite && \
+    a2enmod ssl && \
+    a2enmod proxy && \
+    a2enmod proxy_http && \
+    a2enmod proxy_ajp && \
+    a2enmod rewrite && \
+    a2enmod deflate && \
+    a2enmod headers && \
+    a2enmod proxy_balancer && \
+    a2enmod proxy_connect && \
+    a2enmod xml2enc && \
+    a2enmod proxy_html
+
+ENV APACHE_RUN_USER www-data
+ENV APACHE_RUN_GROUP www-data
+ENV APACHE_LOG_DIR /var/log/apache2
+ENV APACHE_LOCK_DIR /var/lock/apache2
+ENV APACHE_PID_FILE /var/run/apache2.pid

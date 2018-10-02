@@ -1,0 +1,29 @@
+FROM debian9_ssh:stable
+MAINTAINER Harry H. Haller <telemaco230@gmail.com>
+
+ARG equipo
+ARG usuario
+ARG proxy
+
+ENV http_proxy "${proxy}"
+ENV NOTVISIBLE "in users profile"
+ENV SHELL /bin/bash
+ENV TERM linux
+
+COPY archivos/postfix/entrypoint/postfix/start1.sh /entrypoint/postfix/start1.sh
+COPY archivos/postfix/entrypoint/postfix/start2.sh /entrypoint/postfix/start2.sh
+COPY archivos/postfix/entrypoint/postfix/preboot.sh /entrypoint/postfix/preboot.sh
+RUN chmod -Rv 755 /entrypoint/postfix
+RUN chown -Rv root:root /entrypoint/postfix
+RUN sed -i -r "s/\r$//" /entrypoint/postfix/start1.sh
+RUN sed -i -r "s/\r$//" /entrypoint/postfix/start2.sh
+RUN sed -i -r "s/\r$//" /entrypoint/postfix/preboot.sh
+
+RUN apt-get update && apt-get update
+RUN apt-get -y upgrade 
+
+RUN echo "postfix postfix/main_mailer_type string Internet site" > /tmp/preseed.txt
+RUN echo "postfix postfix/mailname string mail.example.com" >> /tmp/preseed.txt
+RUN debconf-set-selections /tmp/preseed.txt
+RUN DEBIAN_FRONTEND=noninteractive apt-get install -q -y mailutils postfix syslog-ng
+RUN rm -fv /tmp/preseed.txt

@@ -1,0 +1,27 @@
+FROM debian9_ssh:stable
+
+ARG equipo
+ARG usuario
+ARG proxy
+
+# establecer variables de entorno
+ENV NOTVISIBLE "in users profile"
+ENV SHELL /bin/bash
+ENV http_proxy ${proxy}
+ENV TERM linux
+
+# preparación básica
+RUN apt-get update && apt-get update
+RUN apt-get -y upgrade
+
+# Instalar NodeJS usando un repositorio actualizado debian
+RUN curl -sL https://deb.nodesource.com/setup_9.x | sudo -E bash -
+RUN sudo apt-get install -y nodejs
+# Dependencias de NodeJS
+RUN apt-get -y install -y build-essential
+# Actualizar NPM 
+RUN npm i npm@latest -g
+# Install Cordova
+RUN npm install -g cordova
+# Install Ionic
+RUN npm install -g ionic

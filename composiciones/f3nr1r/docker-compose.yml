@@ -1,0 +1,43 @@
+version: '3'
+
+services:
+    ssh:
+        image: debian8_ssh:stable
+        entrypoint:
+            - /entrypoint/entrypoint.sh
+            - ssh
+        cap_add:
+            - ALL
+        privileged: true
+        restart: unless-stopped
+        environment:
+            DEBIAN_FRONTEND: ncurses
+            NOTVISIBLE: "in users profile"
+        volumes:
+            - /var/run/docker.sock:/var/run/docker.sock
+        hostname: ssh
+        domainname: f3nr1r.yggdrasil.inf
+        ports:
+            - "172.16.96.253:9001:22"
+
+    nodejs:
+        image: debian8_nodejs:stable
+        entrypoint:
+            - /entrypoint/entrypoint.sh
+            - ssh
+        cap_add:
+            - ALL
+        privileged: true
+        restart: unless-stopped
+        environment:
+            DEBIAN_FRONTEND: ncurses
+            NOTVISIBLE: "in users profile"
+        volumes:
+            - /var/run/docker.sock:/var/run/docker.sock
+            - /mnt/hgfs/Docker/f3nr1r/nodejs/opt/nodejs:/opt/nodejs
+            - /mnt/hgfs/Docker/f3nr1r/nodejs/var/log/nodejs:/var/log/nodejs
+        hostname: nodejs
+        domainname: f3nr1r.yggdrasil.inf
+        ports:
+            - "172.16.96.253:9002:22"
+            - "172.16.96.253:8080:8080"

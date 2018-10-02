@@ -1,0 +1,49 @@
+version: '3'
+
+services:
+    mysql:
+        image: debian7_mysql:stable
+        entrypoint:
+            - /entrypoint/entrypoint.sh
+            - mysql
+        cap_add:
+            - ALL
+        privileged: true
+        restart: unless-stopped
+        environment:
+            DEBIAN_FRONTEND: "ncurses"
+            http_proxy: "http://proxy.yggdrasil.inf:3128"
+            NOTVISIBLE: "in users profile"
+            MYSQL_ROOT_PASSWORD: "esclarecido"
+        volumes:
+            - /var/run/docker.sock:/var/run/docker.sock
+            - /home/telemaco230/repositorios/pangea/composiciones/laboratorio/despliegue/mysql/opt/sql.d:/opt/sql.d
+            - /home/telemaco230/repositorios/pangea/composiciones/laboratorio/despliegue/mysql/var/lib/mysql:/var/lib/mysql
+            - /home/telemaco230/repositorios/pangea/composiciones/laboratorio/despliegue/mysql/var/log/mysql:/var/log/mysql
+        hostname: mysql
+        domainname: hadoop.yggdrasil.inf
+        ports:
+            - "192.168.1.151:8001:22"
+            - "192.168.1.151:8101:3306"
+
+    ambari-server:
+        image: debian7_ambari-server:stable
+        entrypoint:
+            - /entrypoint/entrypoint.sh
+            - ssh
+        depends_on:
+            - mysql
+        cap_add:
+            - ALL
+        privileged: true
+        restart: unless-stopped
+        environment:
+            DEBIAN_FRONTEND: "ncurses"
+            http_proxy: "http://proxy.yggdrasil.inf:3128"
+            NOTVISIBLE: "in users profile"
+        volumes:
+            - /var/run/docker.sock:/var/run/docker.sock
+        hostname: ambari-server
+        domainname: hadoop.yggdrasil.inf
+        ports:
+            - "192.168.1.151:8002:22"

@@ -1,0 +1,57 @@
+FROM debian:9
+
+ARG equipo
+ARG usuario
+ARG http_proxy
+
+ENV http_proxy "${http_proxy}"
+ENV NOTVISIBLE "in users profile"
+ENV SHELL /bin/bash
+ENV TERM linux
+ENV DEBIAN_FRONTEND noninteractive
+
+RUN echo 'debconf debconf/frontend select Noninteractive' | debconf-set-selections
+RUN env | sed -r "s/^/export /" | sed "s/=/=\"/" | sed -r "s/$/\"/" > /etc/profile.d/build.sh && \
+    chmod -v 755 /etc/profile.d/build.sh
+
+# RUN echo "================================================================================" && \
+#     ip a s && \
+#     echo "----------------------------------------" && \
+#     cat /etc/resolv.conf && \
+#     echo "----------------------------------------" && \
+#     ping -c 1 -w 1 8.8.8.8  && \
+#     echo "================================================================================"
+
+RUN apt-get update && apt-get update
+RUN apt-get -y upgrade
+RUN apt-get -y install apt-utils apt-file 
+RUN apt-file update
+RUN apt-get -y install psmisc sudo htop vim vim-scripts less man-db manpages manpages-es manpages-es-extra locales locales-all tzdata console-data keyboard-configuration bind9-host curl dnsutils geoip-bin ifupdown ncftp net-tools wget rsync vim zip unzip bzip2
+RUN apt-file update
+
+COPY archivos/core/etc/default/locale /etc/default/locale
+COPY archivos/core/etc/motd /etc/motd
+COPY archivos/core/etc/profile.d/idioma.sh /etc/profile.d/idioma.sh
+COPY archivos/core/etc/timezone /etc/timezone
+COPY archivos/core/root/.bashrc /root/.bashrc
+COPY archivos/core/root/.bash_aliases /root/.bash_aliases
+COPY archivos/core/root/.bash_functions /root/.bash_functions
+COPY archivos/core/root/.bash_history /root/.bash_history
+COPY archivos/core/root/.profile /root/.profile
+COPY archivos/core/root/.vimrc /root/.vimrc
+COPY archivos/core/entrypoint/entrypoint.sh /entrypoint/entrypoint.sh
+COPY archivos/core/entrypoint/core/genera_certificados.sh /entrypoint/core/genera_certificados.sh
+
+RUN chmod -v 600 /root/.bashrc /root/.bash_functions /root/.bash_aliases /root/.bash_history /root/.profile /root/.vimrc && \
+    chmod -v 755 /entrypoint/entrypoint.sh && \
+    chmod -v 755 /entrypoint/core/genera_certificados.sh && \
+    echo "root:esclarecido" | chpasswd && \
+    sed -i "s/# es_ES ISO-8859-1/es_ES ISO-8859-1/" /etc/locale.gen && \
+    sed -i "s/# es_ES.UTF-8 UTF-8/es_ES.UTF-8 UTF-8/" /etc/locale.gen && \
+    sed -i "s/# es_ES@euro ISO-8859-15/es_ES@euro ISO-8859-15/" /etc/locale.gen && \
+    for definicion in $(cat /etc//default/locale); do export ${definicion}; done && \
+    locale-gen && \
+    dpkg-reconfigure --force locales && \
+    dpkg-reconfigure --force tzdata && \
+    dpkg-reconfigure --force console-data && \
+    dpkg-reconfigure --force keyboard-configuration

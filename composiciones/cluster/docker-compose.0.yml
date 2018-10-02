@@ -1,0 +1,268 @@
+version: '2'
+
+services:
+        repositorio:
+                image: debian8_httpd:stable
+                entrypoint:
+                        - /entrypoint/entrypoint.sh
+                        - httpd
+                cap_add:
+                        - ALL
+                privileged: true
+                environment:
+                        DEBIAN_FRONTEND: noninteractive
+                        NOTVISIBLE: "in users profile"
+                        SHELL: /bin/bash
+                volumes:
+                        - /var/run/docker.sock:/var/run/docker.sock
+                        - D:/usuarios/telemaco230/Proyectos/p3rs0n4l/pangea/composiciones/cluster/repositorio/opt/html:/opt/html
+                        - D:/usuarios/telemaco230/Proyectos/p3rs0n4l/pangea/composiciones/repositorio:/opt/repositorio.phy
+                        - repositorio_opt_repositorio:/opt/repositorio
+                hostname: repositorio
+                domainname: yggdrasil.inf
+                networks:
+                        frontend:
+                        backend:
+                                aliases:
+                                        - software.yggdrasil.inf
+                ports:
+                        - "10.11.12.13:7002:22"
+                        - "10.11.12.13:8002:80"
+        ambaridb:
+                depends_on:
+                        - repositorio
+                image: debian7_mysql:stable 
+                entrypoint:
+                        - /entrypoint/entrypoint.sh
+                        - mysql
+                cap_add:
+                        - ALL
+                privileged: true
+                environment:
+                        DEBIAN_FRONTEND: noninteractive
+                        NOTVISIBLE: "in users profile"
+                        SHELL: /bin/bash
+                        MYSQL_ROOT_PASSWORD: "esclarecido"
+                volumes:
+                        - /var/run/docker.sock:/var/run/docker.sock
+                        - ambaridb_var_lib_mysql:/var/lib/mysql
+                        - ambaridb_var_log_mysql:/var/log/mysql
+                        - D:/usuarios/telemaco230/Proyectos/p3rs0n4l/pangea/composiciones/cluster/hwxdb/opt/sql.d:/opt/sql.d
+                hostname: ambaridb
+                domainname: yggdrasil.inf
+                networks:
+                        frontend:
+                        backend:
+                ports:
+                        - "10.11.12.13:7001:22"                     
+                        - "10.11.12.13:8001:3306"
+        ambariserver:
+                depends_on:
+                        - ambaridb
+                        - repositorio
+                image: debian7_hwxcore:stable 
+                entrypoint:
+                        - /entrypoint/entrypoint.sh
+                        - ssh
+                cap_add:
+                        - ALL
+                privileged: true
+                environment:
+                        DEBIAN_FRONTEND: noninteractive
+                        NOTVISIBLE: "in users profile"
+                        SHELL: /bin/bash
+                volumes:
+                        - /var/run/docker.sock:/var/run/docker.sock
+                hostname: ambariserver
+                domainname: yggdrasil.inf
+                networks:
+                        frontend:
+                        backend:
+                ports:
+                        - "10.11.12.13:7003:22"                     
+                        - "10.11.12.13:8003:8080"
+        nodo0:
+                depends_on:
+                        - repositorio
+                        - ambaridb
+                        - ambariserver
+                image: debian7_hwxcore:stable 
+                entrypoint:
+                        - /entrypoint/entrypoint.sh
+                        - ssh
+                cap_add:
+                        - ALL
+                privileged: true
+                environment:
+                        DEBIAN_FRONTEND: noninteractive
+                        NOTVISIBLE: "in users profile"
+                        SHELL: /bin/bash
+                volumes:
+                        - /var/run/docker.sock:/var/run/docker.sock
+                        - nodo0_usr_hdp:/usr/hdp
+                        - nodo0_hadoop:/hadoop
+                hostname: nodo0
+                domainname: yggdrasil.inf
+                networks:
+                        frontend:
+                        backend:
+                ports:
+                        - "10.11.12.13:7004:22"                     
+        nodo1:
+                depends_on:
+                        - repositorio
+                        - ambaridb
+                        - ambariserver
+                image: debian7_hwxcore:stable 
+                entrypoint:
+                        - /entrypoint/entrypoint.sh
+                        - ssh
+                cap_add:
+                        - ALL
+                privileged: true
+                environment:
+                        DEBIAN_FRONTEND: noninteractive
+                        NOTVISIBLE: "in users profile"
+                        SHELL: /bin/bash
+                volumes:
+                        - /var/run/docker.sock:/var/run/docker.sock
+                        - nodo1_usr_hdp:/usr/hdp
+                        - nodo1_hadoop:/hadoop
+                hostname: nodo1
+                domainname: yggdrasil.inf
+                networks:
+                        frontend:
+                        backend:
+                ports:
+                        - "10.11.12.13:7005:22"                     
+        nodo2:
+                depends_on:
+                        - repositorio
+                        - ambaridb
+                        - ambariserver
+                image: debian7_hwxcore:stable 
+                entrypoint:
+                        - /entrypoint/entrypoint.sh
+                        - ssh
+                cap_add:
+                        - ALL
+                privileged: true
+                environment:
+                        DEBIAN_FRONTEND: noninteractive
+                        NOTVISIBLE: "in users profile"
+                        SHELL: /bin/bash
+                volumes:
+                        - /var/run/docker.sock:/var/run/docker.sock
+                        - nodo2_usr_hdp:/usr/hdp
+                        - nodo2_hadoop:/hadoop
+                hostname: nodo2
+                domainname: yggdrasil.inf
+                networks:
+                        frontend:
+                        backend:
+
+                ports:
+                        - "10.11.12.13:7006:22"                     
+        nodo3:
+                depends_on:
+                        - repositorio
+                        - ambaridb
+                        - ambariserver
+                image: debian7_hwxcore:stable 
+                entrypoint:
+                        - /entrypoint/entrypoint.sh
+                        - ssh
+                cap_add:
+                        - ALL
+                privileged: true
+                environment:
+                        DEBIAN_FRONTEND: noninteractive
+                        NOTVISIBLE: "in users profile"
+                        SHELL: /bin/bash
+                volumes:
+                        - /var/run/docker.sock:/var/run/docker.sock
+                        - nodo3_usr_hdp:/usr/hdp
+                        - nodo3_hadoop:/hadoop
+                hostname: nodo3
+                domainname: yggdrasil.inf
+                networks:
+                        frontend:
+                        backend:
+
+                ports:
+                        - "10.11.12.13:7007:22"                     
+        nodo4:
+                depends_on:
+                        - repositorio
+                        - ambaridb
+                        - ambariserver
+                image: debian7_hwxcore:stable 
+                entrypoint:
+                        - /entrypoint/entrypoint.sh
+                        - ssh
+                cap_add:
+                        - ALL
+                privileged: true
+                environment:
+                        DEBIAN_FRONTEND: noninteractive
+                        NOTVISIBLE: "in users profile"
+                        SHELL: /bin/bash
+                volumes:
+                        - /var/run/docker.sock:/var/run/docker.sock
+                        - nodo4_usr_hdp:/usr/hdp
+                        - nodo4_hadoop:/hadoop
+                hostname: nodo4
+                domainname: yggdrasil.inf
+                networks:
+                        frontend:
+                        backend:
+                ports:
+                        - "10.11.12.13:7008:22"                     
+        nodo5:
+                depends_on:
+                        - repositorio
+                        - ambaridb
+                        - ambariserver
+                image: debian7_hwxcore:stable 
+                entrypoint:
+                        - /entrypoint/entrypoint.sh
+                        - ssh
+                cap_add:
+                        - ALL
+                privileged: true
+                environment:
+                        DEBIAN_FRONTEND: noninteractive
+                        NOTVISIBLE: "in users profile"
+                        SHELL: /bin/bash
+                volumes:
+                        - /var/run/docker.sock:/var/run/docker.sock
+                        - nodo5_usr_hdp:/usr/hdp
+                        - nodo5_hadoop:/hadoop
+                hostname: nodo5
+                domainname: yggdrasil.inf
+                networks:
+                        frontend:
+                        backend:
+                ports:
+                        - "10.11.12.13:7009:22"                     
+
+networks:
+        frontend:
+        backend:
+
+volumes:
+        repositorio_opt_repositorio:
+        ambaridb_var_lib_mysql:
+        ambaridb_var_log_mysql:
+        nodo0_usr_hdp:
+        nodo0_hadoop:
+        nodo1_usr_hdp:
+        nodo1_hadoop:
+        nodo2_usr_hdp:
+        nodo2_hadoop:
+        nodo3_usr_hdp:
+        nodo3_hadoop:
+        nodo4_usr_hdp:
+        nodo4_hadoop:
+        nodo5_usr_hdp:
+        nodo5_hadoop:

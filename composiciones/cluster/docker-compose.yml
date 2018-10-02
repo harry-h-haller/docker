@@ -1,0 +1,141 @@
+version: '3'
+
+services:
+        ambaridb:
+                image: debian7_mysql:stable 
+                entrypoint:
+                        - /entrypoint/entrypoint.sh
+                        - mysql
+                cap_add:
+                        - ALL
+                privileged: true
+                environment:
+                        DEBIAN_FRONTEND: noninteractive
+                        NOTVISIBLE: "in users profile"
+                        SHELL: /bin/bash
+                        MYSQL_ROOT_PASSWORD: "esclarecido"
+                        http_proxy: http://10.11.12.13:3128
+                volumes:
+                        - /var/run/docker.sock:/var/run/docker.sock
+                        - ambaridb_var_lib_mysql:/var/lib/mysql
+                        - ambaridb_var_log_mysql:/var/log/mysql
+                        - D:/usuarios/telemaco230/Proyectos/p3rs0n4l/pangea/composiciones/cluster/hwxdb/opt/sql.d:/opt/sql.d
+                hostname: ambaridb
+                domainname: yggdrasil.inf
+                networks:
+                        frontend:
+                        backend:
+                ports:
+                        - "10.11.12.13:7001:22"                     
+                        - "10.11.12.13:8001:3306"
+        nodo1:
+                depends_on:
+                        - ambaridb
+                image: debian7_hwxcore:stable
+                entrypoint:
+                        - /entrypoint/entrypoint.sh
+                        - hwxcore
+                cap_add:
+                        - ALL
+                privileged: true
+                environment:
+                        DEBIAN_FRONTEND: noninteractive
+                        NOTVISIBLE: in users profile
+                        SHELL: /bin/bash
+                        FRONT_DOMAIN: yggdrasil.inf
+                        BACK_DOMAIN: "cluster"
+                        FRONT_IFACE: "eth0"
+                        BACK_IFACE: "eth1"
+                        NUM_NODOS: "3"
+                        http_proxy: http://10.11.12.13:3128
+                volumes:
+                        - /var/run/docker.sock:/var/run/docker.sock
+                        - cluster_nodo1_usr_hdp:/usr/hdp
+                        - cluster_nodo1_hadoop:/hadoop
+                hostname: nodo1
+                domainname: yggdrasil.inf
+                networks:
+                        frontend:
+                        backend:
+                ports:
+                        - "10.11.12.13:7002:22"
+        nodo2:
+                depends_on:
+                        - ambaridb
+                        - nodo1
+                image: debian7_hwxcore:stable
+                entrypoint:
+                        - /entrypoint/entrypoint.sh
+                        - hwxcore
+                cap_add:
+                        - ALL
+                privileged: true
+                environment:
+                        DEBIAN_FRONTEND: noninteractive
+                        NOTVISIBLE: in users profile
+                        SHELL: /bin/bash
+                        FRONT_DOMAIN: yggdrasil.inf
+                        BACK_DOMAIN: "cluster"
+                        FRONT_IFACE: "eth0"
+                        BACK_IFACE: "eth1"
+                        NUM_NODOS: "3"
+                        http_proxy: http://10.11.12.13:3128
+                volumes:
+                        - /var/run/docker.sock:/var/run/docker.sock
+                        - cluster_nodo2_usr_hdp:/usr/hdp
+                        - cluster_nodo2_hadoop:/hadoop
+                hostname: nodo2
+                domainname: yggdrasil.inf
+                networks:
+                        frontend:
+                        backend:
+                ports:
+                        - "10.11.12.13:7003:22"
+        nodo3:
+                depends_on:
+                        - ambaridb
+                        - nodo2
+                image: debian7_hwxcore:stable
+                entrypoint:
+                        - /entrypoint/entrypoint.sh
+                        - hwxcore
+                cap_add:
+                        - ALL
+                privileged: true
+                environment:
+                        DEBIAN_FRONTEND: noninteractive
+                        NOTVISIBLE: in users profile
+                        SHELL: /bin/bash
+                        FRONT_DOMAIN: yggdrasil.inf
+                        BACK_DOMAIN: "cluster"
+                        FRONT_IFACE: "eth0"
+                        BACK_IFACE: "eth1"
+                        NUM_NODOS: "3"
+                        http_proxy: http://10.11.12.13:3128
+                volumes:
+                        - /var/run/docker.sock:/var/run/docker.sock
+                        - cluster_nodo3_usr_hdp:/usr/hdp
+                        - cluster_nodo3_hadoop:/hadoop
+                hostname: nodo3
+                domainname: yggdrasil.inf
+                networks:
+                        frontend:
+                        backend:
+                ports:
+                        - "10.11.12.13:7004:22"
+
+
+networks:
+        frontend:
+        backend:
+
+volumes:
+        ambaridb_var_lib_mysql:
+        ambaridb_var_log_mysql:
+
+        cluster_nodo1_usr_hdp:
+        cluster_nodo1_hadoop:
+        cluster_nodo2_usr_hdp:
+        cluster_nodo2_hadoop:
+        cluster_nodo3_usr_hdp:
+        cluster_nodo3_hadoop:

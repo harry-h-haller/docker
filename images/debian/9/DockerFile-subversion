@@ -1,0 +1,26 @@
+FROM debian9_ssh:stable
+
+ARG equipo
+ARG usuario
+ARG proxy
+
+ENV http_proxy "${proxy}"
+ENV NOTVISIBLE "in users profile"
+ENV SHELL /bin/bash
+ENV TERM linux
+
+COPY archivos/subversion/entrypoint/subversion/subversion.sh /entrypoint/subversion/subversion.sh
+COPY archivos/subversion/entrypoint/subversion/start1.sh /entrypoint/subversion/start1.sh
+COPY archivos/subversion/entrypoint/subversion/start2.sh /entrypoint/subversion/start2.sh
+COPY archivos/subversion/usr/local/bin/svnserve /usr/local/bin/svnserve
+
+RUN sed -i -r "s/\r$//" /entrypoint/subversion/subversion.sh
+RUN sed -i -r "s/\r$//" /entrypoint/subversion/start1.sh
+RUN sed -i -r "s/\r$//" /entrypoint/subversion/start2.sh
+RUN sed -i -r "s/\r$//" /usr/local/bin/svnserve
+
+RUN chmod -Rv 755 /entrypoint/subversion
+RUN chmod -v 755 /usr/local/bin/svnserve
+RUN apt-get update && apt-get update
+RUN apt-get -y upgrade
+RUN apt-get -y install subversion

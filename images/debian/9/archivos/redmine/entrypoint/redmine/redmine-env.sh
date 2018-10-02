@@ -1,0 +1,9 @@
+#!/bin/bash
+export MYSQL_REDMINE_DATABASE="redmine"
+export MYSQL_REDMINE_HOST="mysql"
+export MYSQL_REDMINE_PORT="3306"
+export MYSQL_REDMINE_USERNAME="redmine"
+export MYSQL_REDMINE_PASSWORD="r3dm1n3"
+export REDMINE_NETWORK_INTERFACE="0.0.0.0"
+export REDMINE_NETWORK_PORT="80"
+export REDMINE_LANG="es"

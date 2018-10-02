@@ -1,0 +1,22 @@
+FROM debian9_ssh:stable
+
+ARG equipo
+ARG usuario
+ARG proxy
+
+ENV http_proxy "${proxy}"
+ENV NOTVISIBLE "in users profile"
+ENV SHELL /bin/bash
+ENV TERM linux
+
+COPY archivos/laravel/etc/apt/sources.list.d/dotdeb.list /etc/apt/sources.list.d/dotdeb.list
+COPY archivos/laravel/var/www/html/index.php /var/www/html/index.php
+
+RUN curl http://www.dotdeb.org/dotdeb.gpg | apt-key add -
+RUN apt-get update && \
+    apt-get update && \
+    apt-get -y upgrade && \
+    apt-get -y install apache2 php7.0 php7.0-fpm php7.0-gd php7.0-mysql
+
+RUN a2enmod proxy_fcgi setenvif && \
+    a2enconf php7.0-fpm

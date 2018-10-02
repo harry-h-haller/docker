@@ -1,0 +1,24 @@
+FROM debian9_ssh:stable
+
+ARG equipo
+ARG usuario
+ARG http_proxy
+
+ENV http_proxy "${http_proxy}"
+ENV NOTVISIBLE "in users profile"
+ENV SHELL /bin/bash
+ENV TERM linux
+
+RUN apt-get update && apt-get update
+RUN apt-get -y upgrade
+RUN apt-get -y install squid3
+
+ADD archivos/squid/entrypoint/squid3/start1.sh  /entrypoint/squid3/start1.sh
+ADD archivos/squid/entrypoint/squid3/start2.sh  /entrypoint/squid3/start2.sh
+ADD archivos/squid/entrypoint/squid3/preboot.sh /entrypoint/squid3/preboot.sh
+ADD archivos/squid/etc/squid3/squid.conf        /etc/squid3/squid.conf
+
+RUN mkdir -pv /opt/squid/log /opt/squid/spool && \
+	chmod -Rv 775 /entrypoint/squid3/start1.sh /entrypoint/squid3/start2.sh /entrypoint/squid3/preboot.sh /opt/squid && \
+    chown -Rv proxy:proxy /opt/squid && \
+    squid3 -z
